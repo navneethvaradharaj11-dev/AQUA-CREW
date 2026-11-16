@@ -538,19 +538,19 @@ export function IotDevicesView() {
                     <div>
                       <span className="text-slate-400">Acoustic SPL:</span>
                       <p className="text-base font-bold text-purple-400 font-mono mt-0.5">
-                        {acousticLeakAnalysis.acoustic_spl_db.toFixed(1)} dB
+                        {Number(acousticLeakAnalysis.acoustic_spl_db ?? 0).toFixed(1)} dB
                       </p>
                     </div>
                     <div>
                       <span className="text-slate-400">Dominant Frequency:</span>
                       <p className="text-base font-bold text-cyan-400 font-mono mt-0.5">
-                        {acousticLeakAnalysis.dominant_freq_hz.toFixed(0)} Hz
+                        {Number(acousticLeakAnalysis.dominant_freq_hz ?? 0).toFixed(0)} Hz
                       </p>
                     </div>
                     <div>
                       <span className="text-slate-400">Leak Probability:</span>
                       <p className="text-base font-bold text-amber-400 font-mono mt-0.5">
-                        {acousticLeakAnalysis.leak_probability_pct.toFixed(1)}%
+                        {Number(acousticLeakAnalysis.leak_probability_pct ?? 0).toFixed(1)}%
                       </p>
                     </div>
                   </div>
@@ -868,7 +868,7 @@ export function IotDevicesView() {
 
               <div className="pt-2 border-t border-slate-800/80 flex flex-wrap gap-2 text-xs">
                 <span className="text-slate-400">Supported Sensor Transducers:</span>
-                {selectedDevice.supported_sensor_types.map((st) => (
+                {(selectedDevice.supported_sensor_types || []).map((st) => (
                   <span key={st} className="px-2 py-0.5 rounded bg-slate-900 border border-slate-700 text-cyan-300 font-mono text-[11px]">
                     {st}
                   </span>
@@ -915,7 +915,7 @@ export function IotDevicesView() {
                       <td className="py-3 px-3 text-cyan-300 font-bold">{t.device_id}</td>
                       <td className="py-3 px-3 text-slate-300 font-sans text-[11px]">{t.sensor_type}</td>
                       <td className="py-3 px-3">
-                        <span className="text-white font-bold text-xs">{t.reading_value.toFixed(2)}</span>{" "}
+                        <span className="text-white font-bold text-xs">{Number(t.reading_value ?? 0).toFixed(2)}</span>{" "}
                         <span className="text-slate-400 text-[10px]">{t.unit}</span>
                       </td>
                       <td className="py-3 px-3">

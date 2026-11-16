@@ -44,6 +44,10 @@ import { AutonomousInspectionView } from "@/components/inspection-intelligence/A
 import { RepairManagementView } from "@/components/repair-management/RepairManagementView";
 import { IotDevicesView } from "@/components/iot-devices/IotDevicesView";
 import { IncidentsView } from "@/components/incidents/IncidentsView";
+import { AnalyticsView } from "@/components/analytics/AnalyticsView";
+import { ReportsView } from "@/components/reports/ReportsView";
+import { SettingsView } from "@/components/settings/SettingsView";
+import { SensorMonitoringView } from "@/components/sensors/SensorMonitoringView";
 
 import { ArrowRight, Map } from "lucide-react";
 
@@ -226,11 +230,16 @@ export function AppShell({ initialNav = "overview" }: AppShellProps) {
             /* AUTONOMOUS ROVER FLEET MANAGEMENT (TASK 05 REQUIREMENT)   */
             /* ========================================================= */
             <FleetManagementView onNavigateToMap={() => setActiveNav("city-map")} />
-          ) : activeNav === "intelligence" || activeNav === "leak-detection" ? (
+          ) : activeNav === "intelligence" || activeNav === "leak-detection" || activeNav === "leak-localization" ? (
             /* ========================================================= */
             /* AI LEAK DETECTION & ACOUSTIC INTELLIGENCE (TASK 07)       */
             /* ========================================================= */
             <AiIntelligenceView />
+          ) : activeNav === "sensor-monitoring" ? (
+            /* ========================================================= */
+            /* STATIONARY SENSOR NETWORK TELEMETRY MONITORING            */
+            /* ========================================================= */
+            <SensorMonitoringView />
           ) : activeNav === "dispatch" || activeNav === "mission-control" ? (
             /* ========================================================= */
             /* AUTONOMOUS MISSION PLANNING & DISPATCH (TASK 08)          */
@@ -286,6 +295,21 @@ export function AppShell({ initialNav = "overview" }: AppShellProps) {
             /* UNIFIED INCIDENT INTELLIGENCE & ACCEPTANCE (TASK 19)      */
             /* ========================================================= */
             <IncidentsView />
+          ) : activeNav === "analytics" ? (
+            /* ========================================================= */
+            /* SYSTEM TELEMETRY & HYDRAULIC ANALYTICS DASHBOARD          */
+            /* ========================================================= */
+            <AnalyticsView />
+          ) : activeNav === "reports" ? (
+            /* ========================================================= */
+            /* ENGINEERING REPORTS & REGULATORY AUDIT DOSSIERS           */
+            /* ========================================================= */
+            <ReportsView />
+          ) : activeNav === "settings" ? (
+            /* ========================================================= */
+            /* PLATFORM CONFIGURATION & HARDWARE SAFETY CONTROLS         */
+            /* ========================================================= */
+            <SettingsView />
           ) : (
             /* ========================================================= */
             /* NAVIGATION DESTINATION PLACEHOLDERS (DESTINATIONS 4-11)   */

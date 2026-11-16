@@ -623,7 +623,32 @@ class BackendApiClient {
       });
       if (res.ok) {
         this.isBackendOnline = true;
-        return await res.json();
+        const data = await res.json();
+        const feats = data.features || {};
+        const fallback = generateFallbackWaveform(scenario, durationSec, snrDb);
+        return {
+          scenario: data.scenario || scenario,
+          duration_sec: data.duration_seconds ?? durationSec,
+          sampling_rate_hz: data.sampling_rate_hz ?? 8000,
+          rms_amplitude: Number(feats.rms_amplitude ?? data.rms_amplitude ?? fallback.rms_amplitude),
+          peak_amplitude: Number(feats.peak_amplitude ?? data.peak_amplitude ?? fallback.peak_amplitude),
+          dominant_frequency_hz: Number(feats.dominant_frequency_hz ?? data.dominant_frequency_hz ?? fallback.dominant_frequency_hz),
+          spectral_centroid_hz: Number(feats.spectral_centroid_hz ?? data.spectral_centroid_hz ?? fallback.spectral_centroid_hz),
+          spectral_bandwidth_hz: Number(feats.spectral_bandwidth_hz ?? data.spectral_bandwidth_hz ?? fallback.spectral_bandwidth_hz),
+          snr_db: Number(feats.snr_db ?? data.snr_db ?? snrDb),
+          time_series: Array.isArray(data.time_series) && data.time_series.length > 0
+            ? data.time_series
+            : Array.isArray(data.time_series_sample) && data.time_series_sample.length > 0
+            ? data.time_series_sample
+            : fallback.time_series,
+          frequency_spectrum: Array.isArray(data.frequency_spectrum) && data.frequency_spectrum.length > 0
+            ? data.frequency_spectrum
+            : Array.isArray(data.fft_spectrum_sample) && data.fft_spectrum_sample.length > 0
+            ? data.fft_spectrum_sample
+            : fallback.frequency_spectrum,
+          is_simulated: true,
+          source: data.source || "VIRTUAL_SIMULATION_ENGINE",
+        };
       }
     } catch {
       this.isBackendOnline = false;

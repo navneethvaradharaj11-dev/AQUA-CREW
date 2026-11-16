@@ -450,7 +450,7 @@ export function AiIntelligenceView() {
                       {selectedDetection.classification.replace(/_/g, " ")}
                     </span>
                     <div className="text-[11px] text-emerald-400 font-mono">
-                      Confidence: {(selectedDetection.confidence * 100).toFixed(0)}%
+                      Confidence: {selectedDetection.confidence != null ? (selectedDetection.confidence * 100).toFixed(0) : "0"}%
                     </div>
                   </div>
                   <div className="rounded border border-slate-800 bg-slate-900/60 p-2.5 space-y-1">
@@ -459,7 +459,7 @@ export function AiIntelligenceView() {
                       {selectedDetection.risk_level}
                     </span>
                     <div className="text-[11px] text-slate-400 font-mono">
-                      Est. Loss: {selectedDetection.estimated_loss_lph.toFixed(0)} L/h
+                      Est. Loss: {selectedDetection.estimated_loss_lph != null ? Number(selectedDetection.estimated_loss_lph).toFixed(0) : "0"} L/h
                     </div>
                   </div>
                 </div>
@@ -481,13 +481,13 @@ export function AiIntelligenceView() {
                       <div className="flex justify-between">
                         <span className="text-slate-400">Estimated Lat / Lng:</span>
                         <span className="text-white">
-                          {selectedDetection.estimated_latitude.toFixed(5)}, {selectedDetection.estimated_longitude.toFixed(5)}
+                          {Number(selectedDetection.estimated_latitude).toFixed(5)}, {Number(selectedDetection.estimated_longitude).toFixed(5)}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-slate-400">Uncertainty Radius:</span>
                         <span className="text-amber-300">
-                          ±{selectedDetection.localization_uncertainty_m?.toFixed(1) || 20} meters
+                          ±{selectedDetection.localization_uncertainty_m != null ? Number(selectedDetection.localization_uncertainty_m).toFixed(1) : 20} meters
                         </span>
                       </div>
                       <div className="flex justify-between">
@@ -708,31 +708,31 @@ export function AiIntelligenceView() {
                 <div className="rounded border border-slate-800 bg-slate-900/60 p-2 text-center">
                   <div className="text-[10px] font-mono text-slate-400">RMS Amplitude</div>
                   <div className="text-xs font-bold font-mono text-cyan-400">
-                    {waveform.rms_amplitude.toFixed(1)} dB
+                    {waveform.rms_amplitude != null ? Number(waveform.rms_amplitude).toFixed(1) : "—"} dB
                   </div>
                 </div>
                 <div className="rounded border border-slate-800 bg-slate-900/60 p-2 text-center">
                   <div className="text-[10px] font-mono text-slate-400">Dominant Frequency</div>
                   <div className="text-xs font-bold font-mono text-emerald-400">
-                    {waveform.dominant_frequency_hz} Hz
+                    {waveform.dominant_frequency_hz ?? "—"} Hz
                   </div>
                 </div>
                 <div className="rounded border border-slate-800 bg-slate-900/60 p-2 text-center">
                   <div className="text-[10px] font-mono text-slate-400">Spectral Centroid</div>
                   <div className="text-xs font-bold font-mono text-amber-400">
-                    {waveform.spectral_centroid_hz} Hz
+                    {waveform.spectral_centroid_hz ?? "—"} Hz
                   </div>
                 </div>
                 <div className="rounded border border-slate-800 bg-slate-900/60 p-2 text-center">
                   <div className="text-[10px] font-mono text-slate-400">Spectral Bandwidth</div>
                   <div className="text-xs font-bold font-mono text-white">
-                    {waveform.spectral_bandwidth_hz} Hz
+                    {waveform.spectral_bandwidth_hz ?? "—"} Hz
                   </div>
                 </div>
                 <div className="rounded border border-slate-800 bg-slate-900/60 p-2 text-center col-span-2 sm:col-span-1">
                   <div className="text-[10px] font-mono text-slate-400">Estimated SNR</div>
                   <div className="text-xs font-bold font-mono text-cyan-300">
-                    {waveform.snr_db.toFixed(1)} dB
+                    {waveform.snr_db != null ? Number(waveform.snr_db).toFixed(1) : "—"} dB
                   </div>
                 </div>
               </div>
@@ -762,10 +762,10 @@ export function AiIntelligenceView() {
                         stroke="#06b6d4"
                         strokeWidth="1.8"
                         strokeLinejoin="round"
-                        points={waveform.time_series
-                          .map((val, i) => {
-                            const x = (i / (waveform.time_series.length - 1)) * 500;
-                            const y = 70 - val * 45;
+                        points={(waveform.time_series && waveform.time_series.length > 0 ? waveform.time_series : [0, 0])
+                          .map((val, i, arr) => {
+                            const x = (i / Math.max(1, arr.length - 1)) * 500;
+                            const y = 70 - (val || 0) * 45;
                             return `${x},${y}`;
                           })
                           .join(" ")}
@@ -786,9 +786,9 @@ export function AiIntelligenceView() {
                     <span className="font-mono text-[10px] text-slate-400">0 – 4,000 Hz</span>
                   </div>
                   <div className="h-40 w-full flex items-end justify-between gap-1.5 pt-4">
-                    {waveform.frequency_spectrum.map((bin) => {
-                      const heightPct = Math.min(100, Math.max(6, Math.round(bin.magnitude * 100)));
-                      const isDominant = Math.abs(bin.frequency_hz - waveform.dominant_frequency_hz) < 150;
+                    {(waveform.frequency_spectrum || []).map((bin) => {
+                      const heightPct = Math.min(100, Math.max(6, Math.round((bin.magnitude || 0) * 100)));
+                      const isDominant = Math.abs((bin.frequency_hz || 0) - (waveform.dominant_frequency_hz || 0)) < 150;
 
                       return (
                         <div
