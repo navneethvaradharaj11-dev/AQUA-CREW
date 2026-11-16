@@ -454,30 +454,30 @@ export function IotDevicesView() {
                     <div>
                       <span className="text-slate-400">Observed Pressure:</span>
                       <p className="text-base font-bold text-cyan-400 font-mono mt-0.5">
-                        {digitalTwinComp.observed_pressure_bar.toFixed(2)} bar
+                        {Number(digitalTwinComp.observed_pressure_bar ?? 0).toFixed(2)} bar
                       </p>
                     </div>
                     <div>
                       <span className="text-slate-400">EPANET Twin Baseline:</span>
                       <p className="text-base font-bold text-slate-200 font-mono mt-0.5">
-                        {digitalTwinComp.epanet_baseline_pressure_bar.toFixed(2)} bar
+                        {Number(digitalTwinComp.epanet_baseline_pressure_bar ?? (digitalTwinComp as any).simulated_pressure_bar ?? 4.25).toFixed(2)} bar
                       </p>
                     </div>
                     <div>
                       <span className="text-slate-400">Hydraulic Delta (ΔP):</span>
                       <p
                         className={`text-base font-bold font-mono mt-0.5 ${
-                          Math.abs(digitalTwinComp.pressure_delta_bar) > 0.5 ? "text-amber-400" : "text-emerald-400"
+                          Math.abs(digitalTwinComp.pressure_delta_bar ?? 0) > 0.5 ? "text-amber-400" : "text-emerald-400"
                         }`}
                       >
-                        {digitalTwinComp.pressure_delta_bar > 0 ? "+" : ""}
-                        {digitalTwinComp.pressure_delta_bar.toFixed(2)} bar
+                        {(digitalTwinComp.pressure_delta_bar ?? 0) > 0 ? "+" : ""}
+                        {Number(digitalTwinComp.pressure_delta_bar ?? 0).toFixed(2)} bar
                       </p>
                     </div>
                     <div>
                       <span className="text-slate-400">Model Residual:</span>
                       <p className="text-base font-bold text-slate-200 font-mono mt-0.5">
-                        {digitalTwinComp.pressure_residual_pct.toFixed(1)}%
+                        {Number(digitalTwinComp.pressure_residual_pct ?? Math.abs((digitalTwinComp as any).pressure_deviation_pct ?? 0)).toFixed(1)}%
                       </p>
                     </div>
                   </div>

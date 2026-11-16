@@ -663,7 +663,18 @@ class IotApiClient {
         }
       );
       if (res.ok) {
-        return await res.json();
+        const raw = await res.json();
+        return {
+          pipeline_segment_id: raw.pipeline_segment_id || pipelineSegmentId,
+          observed_pressure_bar: Number(raw.observed_pressure_bar ?? observedPressureBar),
+          epanet_baseline_pressure_bar: Number(raw.epanet_baseline_pressure_bar ?? raw.simulated_pressure_bar ?? 4.25),
+          pressure_delta_bar: Number(raw.pressure_delta_bar ?? 0),
+          pressure_residual_pct: Number(raw.pressure_residual_pct ?? Math.abs(raw.pressure_deviation_pct ?? 0)),
+          observed_flow_lps: Number(raw.observed_flow_lps ?? observedFlowLps),
+          epanet_baseline_flow_lps: Number(raw.epanet_baseline_flow_lps ?? raw.simulated_flow_lps ?? 87.2),
+          hydraulic_deviation_status: raw.hydraulic_deviation_status || (raw.hydraulic_anomaly_flagged ? "ANOMALOUS_PRESSURE_DROP" : "NORMAL"),
+          timestamp: raw.timestamp || new Date().toISOString(),
+        };
       }
     } catch {
       // fallback
