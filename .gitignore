@@ -36,6 +36,8 @@ share/python-wheels/
 htmlcov/
 .mypy_cache/
 .ruff_cache/
+*.tsbuildinfo
+
 
 # Next.js & Frontend build
 .next/

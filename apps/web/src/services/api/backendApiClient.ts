@@ -135,7 +135,12 @@ import {
   RepairWorkflowEvent,
 } from "./repairManagementTypes";
 
-const DEFAULT_API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000/api/v1";
+const DEFAULT_API_BASE = process.env.NEXT_PUBLIC_API_BASE_URL ||
+  (process.env.NEXT_PUBLIC_API_URL
+    ? (process.env.NEXT_PUBLIC_API_URL.endsWith("/api/v1")
+        ? process.env.NEXT_PUBLIC_API_URL
+        : `${process.env.NEXT_PUBLIC_API_URL}/api/v1`)
+    : "http://localhost:8000/api/v1");
 
 export interface BackendConnectionStatus {
   isConnected: boolean;
