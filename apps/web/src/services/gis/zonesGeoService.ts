@@ -16,7 +16,7 @@ export interface ZoneFeatureCollection {
 }
 
 const ZONE_FEATURES: ZoneFeature[] = [
-  // Sector 4: Metro Core (Highest density, central hub)
+  // Sector 4: Bengaluru CBD & Vidhana Soudha (Highest density, central hub)
   {
     type: "Feature",
     id: "ZONE-SEC-04",
@@ -24,11 +24,11 @@ const ZONE_FEATURES: ZoneFeature[] = [
       type: "Polygon",
       coordinates: [
         [
-          [-74.0150, 40.7100],
-          [-74.0040, 40.7100],
-          [-74.0040, 40.7180],
-          [-74.0150, 40.7180],
-          [-74.0150, 40.7100],
+          [77.5800, 12.9620],
+          [77.6100, 12.9620],
+          [77.6100, 12.9820],
+          [77.5800, 12.9820],
+          [77.5800, 12.9620],
         ],
       ],
     },
@@ -36,10 +36,10 @@ const ZONE_FEATURES: ZoneFeature[] = [
       isSimulated: true,
       provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
       zoneId: "ZONE-SEC-04",
-      name: "Sector 4 — Metropolitan Business Core",
+      name: "Sector 4 — Bengaluru CBD & Vidhana Soudha",
       sectorCode: "SEC-04",
       riskScorePct: 84.5,
-      areaSqKm: 1.25,
+      areaSqKm: 2.25,
       totalSegmentsCount: 420,
       activeRoversCount: 1,
       nominalPressurePsi: 65,
@@ -47,7 +47,7 @@ const ZONE_FEATURES: ZoneFeature[] = [
     },
   },
 
-  // Sector 1: Eastern Industrial Zone
+  // Sector 1: Indiranagar & HAL Tech Corridor
   {
     type: "Feature",
     id: "ZONE-SEC-01",
@@ -55,11 +55,11 @@ const ZONE_FEATURES: ZoneFeature[] = [
       type: "Polygon",
       coordinates: [
         [
-          [-74.0040, 40.7100],
-          [-73.9920, 40.7100],
-          [-73.9920, 40.7200],
-          [-74.0040, 40.7200],
-          [-74.0040, 40.7100],
+          [77.6100, 12.9620],
+          [77.6500, 12.9620],
+          [77.6500, 12.9900],
+          [77.6100, 12.9900],
+          [77.6100, 12.9620],
         ],
       ],
     },
@@ -67,10 +67,10 @@ const ZONE_FEATURES: ZoneFeature[] = [
       isSimulated: true,
       provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
       zoneId: "ZONE-SEC-01",
-      name: "Sector 1 — Eastern Heavy Industrial Terminal",
+      name: "Sector 1 — Indiranagar & HAL Tech Corridor",
       sectorCode: "SEC-01",
       riskScorePct: 62.0,
-      areaSqKm: 1.68,
+      areaSqKm: 3.10,
       totalSegmentsCount: 310,
       activeRoversCount: 1,
       nominalPressurePsi: 60,
@@ -78,7 +78,7 @@ const ZONE_FEATURES: ZoneFeature[] = [
     },
   },
 
-  // Sector 3: Northern Residential Zone
+  // Sector 3: Malleshwaram & Sadashivanagar
   {
     type: "Feature",
     id: "ZONE-SEC-03",
@@ -86,11 +86,11 @@ const ZONE_FEATURES: ZoneFeature[] = [
       type: "Polygon",
       coordinates: [
         [
-          [-74.0150, 40.7180],
-          [-73.9920, 40.7180],
-          [-73.9920, 40.7260],
-          [-74.0150, 40.7260],
-          [-74.0150, 40.7180],
+          [77.5600, 12.9820],
+          [77.6100, 12.9820],
+          [77.6100, 13.0150],
+          [77.5600, 13.0150],
+          [77.5600, 12.9820],
         ],
       ],
     },
@@ -98,10 +98,10 @@ const ZONE_FEATURES: ZoneFeature[] = [
       isSimulated: true,
       provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
       zoneId: "ZONE-SEC-03",
-      name: "Sector 3 — Northern Residential Enclave",
+      name: "Sector 3 — Malleshwaram & Sadashivanagar",
       sectorCode: "SEC-03",
       riskScorePct: 41.2,
-      areaSqKm: 2.15,
+      areaSqKm: 2.85,
       totalSegmentsCount: 295,
       activeRoversCount: 1,
       nominalPressurePsi: 52,
@@ -109,7 +109,7 @@ const ZONE_FEATURES: ZoneFeature[] = [
     },
   },
 
-  // Sector 2: Southern Harbor & Coastal Zone
+  // Sector 2: Koramangala & South Distribution
   {
     type: "Feature",
     id: "ZONE-SEC-02",
@@ -117,11 +117,11 @@ const ZONE_FEATURES: ZoneFeature[] = [
       type: "Polygon",
       coordinates: [
         [
-          [-74.0180, 40.7020],
-          [-74.0020, 40.7020],
-          [-74.0020, 40.7100],
-          [-74.0180, 40.7100],
-          [-74.0180, 40.7020],
+          [77.5800, 12.9250],
+          [77.6400, 12.9250],
+          [77.6400, 12.9620],
+          [77.5800, 12.9620],
+          [77.5800, 12.9250],
         ],
       ],
     },
@@ -129,10 +129,10 @@ const ZONE_FEATURES: ZoneFeature[] = [
       isSimulated: true,
       provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
       zoneId: "ZONE-SEC-02",
-      name: "Sector 2 — Maritime Utility & Harbor District",
+      name: "Sector 2 — Koramangala & South Distribution",
       sectorCode: "SEC-02",
       riskScorePct: 48.0,
-      areaSqKm: 1.82,
+      areaSqKm: 3.40,
       totalSegmentsCount: 215,
       activeRoversCount: 1,
       nominalPressurePsi: 58,
@@ -147,4 +147,3 @@ export function getZonesGeoJson(): ZoneFeatureCollection {
     features: ZONE_FEATURES,
   };
 }
-

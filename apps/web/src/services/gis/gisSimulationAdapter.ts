@@ -26,8 +26,8 @@ export interface GeoJsonFeatureCollection<P> {
 export async function getRoversGeoJson(): Promise<GeoJsonFeatureCollection<RoverMarkerProperties>> {
   const rovers = await fetchRovers();
   const features: GeoJsonFeature<RoverMarkerProperties>[] = (rovers || []).map((r) => {
-    const lng = Number(r.currentLocation?.longitude ?? -74.006);
-    const lat = Number(r.currentLocation?.latitude ?? 40.7128);
+    const lng = Number(r.currentLocation?.longitude ?? 77.5946);
+    const lat = Number(r.currentLocation?.latitude ?? 12.9716);
     return {
       type: "Feature",
       id: r.id,
@@ -64,8 +64,8 @@ export async function getRoversGeoJson(): Promise<GeoJsonFeatureCollection<Rover
 export async function getIncidentsGeoJson(): Promise<GeoJsonFeatureCollection<LeakIncidentProperties>> {
   const incidents = await fetchIncidents();
   const features: GeoJsonFeature<LeakIncidentProperties>[] = (incidents || []).map((inc) => {
-    const lng = Number(inc.estimatedLocation?.longitude ?? -74.006);
-    const lat = Number(inc.estimatedLocation?.latitude ?? 40.7128);
+    const lng = Number(inc.estimatedLocation?.longitude ?? 77.5946);
+    const lat = Number(inc.estimatedLocation?.latitude ?? 12.9716);
     return {
       type: "Feature",
       id: inc.id,
@@ -99,7 +99,7 @@ export async function getIncidentsGeoJson(): Promise<GeoJsonFeatureCollection<Le
 }
 
 /**
- * Generates stationary sensor stations along pipeline network segments
+ * Generates stationary sensor stations along Bengaluru pipeline network segments
  */
 export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationProperties> {
   const SENSOR_STATIONS: GeoJsonFeature<SensorStationProperties>[] = [
@@ -107,12 +107,12 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     {
       type: "Feature",
       id: "SNS-AC-01",
-      geometry: { type: "Point", coordinates: [-74.0110, 40.7115] },
+      geometry: { type: "Point", coordinates: [77.5900, 12.9705] },
       properties: {
         isSimulated: true,
         provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
         stationId: "SNS-AC-01",
-        name: "Acoustic Hydrophone Array Alpha",
+        name: "Acoustic Hydrophone Array Alpha (MG Road)",
         modality: "acoustic",
         modalityLabel: "Acoustic Hydrophone",
         currentValue: 46.2,
@@ -126,12 +126,12 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     {
       type: "Feature",
       id: "SNS-AC-02",
-      geometry: { type: "Point", coordinates: [-74.0010, 40.7140] },
+      geometry: { type: "Point", coordinates: [77.6000, 12.9730] },
       properties: {
         isSimulated: true,
         provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
         stationId: "SNS-AC-02",
-        name: "Acoustic Hydrophone Beta",
+        name: "Acoustic Hydrophone Beta (Trinity Circle)",
         modality: "acoustic",
         modalityLabel: "Acoustic Hydrophone",
         currentValue: 38.5,
@@ -147,12 +147,12 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     {
       type: "Feature",
       id: "SNS-PR-01",
-      geometry: { type: "Point", coordinates: [-74.0060, 40.7080] },
+      geometry: { type: "Point", coordinates: [77.5946, 12.9630] },
       properties: {
         isSimulated: true,
         provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
         stationId: "SNS-PR-01",
-        name: "High-Speed Pressure Transducer PZ-01",
+        name: "High-Speed Pressure Transducer PZ-01 (Richmond)",
         modality: "pressure",
         modalityLabel: "Pressure Transducer",
         currentValue: 64.2,
@@ -166,12 +166,12 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     {
       type: "Feature",
       id: "SNS-PR-02",
-      geometry: { type: "Point", coordinates: [-74.0035, 40.7135] },
+      geometry: { type: "Point", coordinates: [77.6080, 12.9735] },
       properties: {
         isSimulated: true,
         provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
         stationId: "SNS-PR-02",
-        name: "Pressure Transient Logger PZ-02",
+        name: "Pressure Transient Logger PZ-02 (Ulsoor)",
         modality: "pressure",
         modalityLabel: "Pressure Transducer",
         currentValue: 59.8,
@@ -187,12 +187,12 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     {
       type: "Feature",
       id: "SNS-FL-01",
-      geometry: { type: "Point", coordinates: [-74.0060, 40.7170] },
+      geometry: { type: "Point", coordinates: [77.5946, 12.9800] },
       properties: {
         isSimulated: true,
         provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
         stationId: "SNS-FL-01",
-        name: "Magnetic Ultrasonic Flow Meter FM-1",
+        name: "Magnetic Ultrasonic Flow Meter FM-1 (Cubbon)",
         modality: "flow",
         modalityLabel: "Flow Meter",
         currentValue: 124.5,
@@ -208,15 +208,15 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     {
       type: "Feature",
       id: "SNS-TH-01",
-      geometry: { type: "Point", coordinates: [-74.0130, 40.7180] },
+      geometry: { type: "Point", coordinates: [77.5750, 12.9940] },
       properties: {
         isSimulated: true,
         provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
         stationId: "SNS-TH-01",
-        name: "Subsurface Thermal Probe TP-04",
+        name: "Subsurface Thermal Probe TP-04 (Malleshwaram)",
         modality: "thermal",
         modalityLabel: "Thermal Probe",
-        currentValue: 18.2,
+        currentValue: 24.2,
         unit: "°C",
         sampleRateHz: 10,
         status: "Nominal",
@@ -229,12 +229,12 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     {
       type: "Feature",
       id: "SNS-MS-01",
-      geometry: { type: "Point", coordinates: [-74.0100, 40.7065] },
+      geometry: { type: "Point", coordinates: [77.6120, 12.9430] },
       properties: {
         isSimulated: true,
         provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
         stationId: "SNS-MS-01",
-        name: "Ground Moisture Impedance Sensor M-02",
+        name: "Ground Moisture Impedance Sensor M-02 (Koramangala)",
         modality: "moisture",
         modalityLabel: "Soil Moisture",
         currentValue: 16.4,
@@ -252,4 +252,3 @@ export function getSensorsGeoJson(): GeoJsonFeatureCollection<SensorStationPrope
     features: SENSOR_STATIONS,
   };
 }
-

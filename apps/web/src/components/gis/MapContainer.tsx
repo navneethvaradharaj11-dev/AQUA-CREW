@@ -51,10 +51,10 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
     const mapRef = useRef<MapLibreMap | null>(null);
     const [isMapLoaded, setIsMapLoaded] = useState(false);
 
-    // Demonstration Area Bounding Box around Lower Manhattan / Metro Simulation Grid
+    // Demonstration Area Bounding Box around Bengaluru (BWSSB Urban Water Supply Grid)
     const NETWORK_BOUNDS: [[number, number], [number, number]] = [
-      [-74.020, 40.702], // Southwest
-      [-73.990, 40.728], // Northeast
+      [77.5400, 12.9100], // Southwest (South Koramangala / Dairy Circle)
+      [77.6600, 13.0200], // Northeast (Indiranagar / Malleshwaram North)
     ];
 
     const getBasemapStyle = (style: "dark" | "light" | "osm"): StyleSpecification => {
@@ -175,7 +175,7 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
         map = new MapLibreMap({
           container: mapContainerRef.current,
           style: getBasemapStyle(basemapStyle),
-          center: [-74.0060, 40.7128],
+          center: [77.5946, 12.9716], // Bengaluru MG Road / Vidhana Soudha Central Core
           zoom: 14.2,
           pitch: 30, // Subtle SCADA 3D tilt
           attributionControl: false,
@@ -184,6 +184,9 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
         console.error("Failed to construct MapLibreMap:", e);
         return;
       }
+
+      // Keep ref immediately available
+      mapRef.current = map;
 
       map.addControl(
         new AttributionControl({ compact: true }),
@@ -194,167 +197,203 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
         "top-right"
       );
 
-      map.on("load", async () => {
+      const addLayers = async () => {
         try {
-          if (!mapRef.current) return;
+          if (!map) return;
 
           // 1. Add Inspection Zones (Polygons)
           const zonesGeoJson = getZonesGeoJson();
-          if (mapRef.current && !mapRef.current.getSource("zones-source")) {
-            mapRef.current.addSource("zones-source", {
+          if (!map.getSource("zones-source")) {
+            map.addSource("zones-source", {
               type: "geojson",
               data: zonesGeoJson as any,
             });
 
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "zones-fill-layer",
               type: "fill",
               source: "zones-source",
               paint: {
                 "fill-color": ["get", "fillColor"],
-                "fill-opacity": 0.08,
+                "fill-opacity": 0.12,
               },
             });
 
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "zones-outline-layer",
               type: "line",
               source: "zones-source",
               paint: {
                 "line-color": ["get", "fillColor"],
-                "line-width": 1.5,
+                "line-width": 2.0,
                 "line-dasharray": [3, 2],
-                "line-opacity": 0.5,
+                "line-opacity": 0.75,
               },
             });
           }
 
-          if (!mapRef.current) return;
-
           // 2. Add Pipeline Network (LineStrings)
           const pipelinesGeoJson = getPipelineGeoJson();
-          if (mapRef.current && !mapRef.current.getSource("pipelines-source")) {
-            mapRef.current.addSource("pipelines-source", {
+          if (!map.getSource("pipelines-source")) {
+            map.addSource("pipelines-source", {
               type: "geojson",
               data: pipelinesGeoJson as any,
             });
 
+            // Glowing Casings for high contrast
+            map.addLayer({
+              id: "pipelines-casing-layer",
+              type: "line",
+              source: "pipelines-source",
+              paint: {
+                "line-color": "#0284c7",
+                "line-width": 8.0,
+                "line-opacity": 0.25,
+                "line-blur": 2.0,
+              },
+            });
+
             // Primary Trunk Lines
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "pipelines-primary-layer",
               type: "line",
               source: "pipelines-source",
               filter: ["==", ["get", "category"], "primary"],
               paint: {
-                "line-color": "#06b6d4",
-                "line-width": 4.5,
-                "line-opacity": 0.9,
+                "line-color": "#00f0ff",
+                "line-width": 5.5,
+                "line-opacity": 0.95,
               },
             });
 
             // Secondary Feeder Lines
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "pipelines-secondary-layer",
               type: "line",
               source: "pipelines-source",
               filter: ["==", ["get", "category"], "secondary"],
               paint: {
                 "line-color": "#38bdf8",
-                "line-width": 3.2,
-                "line-opacity": 0.85,
+                "line-width": 3.8,
+                "line-opacity": 0.9,
               },
             });
 
             // Distribution Lines
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "pipelines-distribution-layer",
               type: "line",
               source: "pipelines-source",
               filter: ["==", ["get", "category"], "distribution"],
               paint: {
-                "line-color": "#14b8a6",
-                "line-width": 2.5,
-                "line-opacity": 0.8,
+                "line-color": "#2dd4bf",
+                "line-width": 3.0,
+                "line-opacity": 0.85,
               },
             });
 
             // Service Laterals (Dashed)
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "pipelines-service-layer",
               type: "line",
               source: "pipelines-source",
               filter: ["==", ["get", "category"], "service"],
               paint: {
-                "line-color": "#94a3b8",
-                "line-width": 1.8,
-                "line-dasharray": [2, 2],
-                "line-opacity": 0.75,
+                "line-color": "#e2e8f0",
+                "line-width": 2.2,
+                "line-dasharray": [3, 2],
+                "line-opacity": 0.8,
               },
             });
           }
 
-          if (!mapRef.current) return;
-
           // 3. Add Stationary Sensor Stations (Points)
           const sensorsGeoJson = getSensorsGeoJson();
-          if (mapRef.current && !mapRef.current.getSource("sensors-source")) {
-            mapRef.current.addSource("sensors-source", {
+          if (!map.getSource("sensors-source")) {
+            map.addSource("sensors-source", {
               type: "geojson",
               data: sensorsGeoJson as any,
             });
 
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "sensors-point-layer",
               type: "circle",
               source: "sensors-source",
               paint: {
-                "circle-radius": 5.5,
+                "circle-radius": 7.0,
                 "circle-color": "#38bdf8",
-                "circle-stroke-width": 1.5,
-                "circle-stroke-color": "#02060e",
+                "circle-stroke-width": 2.0,
+                "circle-stroke-color": "#020617",
               },
             });
           }
 
-          if (!mapRef.current) return;
+          // 4. Add Leak Incidents (Points) — Initial sync fallback
+          const defaultIncidents = {
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                id: "INC-2026-081",
+                geometry: { type: "Point", coordinates: [77.5946, 12.9716] },
+                properties: { severity: "Critical", incidentId: "INC-2026-081", segmentName: "MG Road Trunk B" },
+              },
+              {
+                type: "Feature",
+                id: "INC-2026-079",
+                geometry: { type: "Point", coordinates: [77.6200, 12.9770] },
+                properties: { severity: "High", incidentId: "INC-2026-079", segmentName: "Indiranagar Feeder" },
+              },
+              {
+                type: "Feature",
+                id: "INC-2026-076",
+                geometry: { type: "Point", coordinates: [77.5750, 12.9940] },
+                properties: { severity: "Medium", incidentId: "INC-2026-076", segmentName: "Malleshwaram Feeder" },
+              },
+              {
+                type: "Feature",
+                id: "INC-2026-072",
+                geometry: { type: "Point", coordinates: [77.6120, 12.9430] },
+                properties: { severity: "Low", incidentId: "INC-2026-072", segmentName: "Koramangala South" },
+              },
+            ],
+          };
 
-          // 4. Add Leak Incidents (Points)
-          const incidentsGeoJson = await getIncidentsGeoJson();
-          if (mapRef.current && !mapRef.current.getSource("incidents-source")) {
-            mapRef.current.addSource("incidents-source", {
+          if (!map.getSource("incidents-source")) {
+            map.addSource("incidents-source", {
               type: "geojson",
-              data: incidentsGeoJson as any,
+              data: defaultIncidents as any,
             });
 
             // Incident Pulsing Aura
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "incidents-glow-layer",
               type: "circle",
               source: "incidents-source",
               paint: {
-                "circle-radius": 14,
+                "circle-radius": 20,
                 "circle-color": [
                   "match",
                   ["get", "severity"],
                   "Critical",
-                  "rgba(239, 68, 68, 0.35)",
+                  "rgba(239, 68, 68, 0.45)",
                   "High",
-                  "rgba(245, 158, 11, 0.35)",
+                  "rgba(245, 158, 11, 0.45)",
                   "Medium",
-                  "rgba(6, 182, 212, 0.3)",
-                  "rgba(100, 116, 139, 0.25)",
+                  "rgba(6, 182, 212, 0.4)",
+                  "rgba(100, 116, 139, 0.35)",
                 ],
                 "circle-blur": 0.8,
               },
             });
 
             // Incident Core Marker
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "incidents-point-layer",
               type: "circle",
               source: "incidents-source",
               paint: {
-                "circle-radius": 7,
+                "circle-radius": 8.5,
                 "circle-color": [
                   "match",
                   ["get", "severity"],
@@ -366,41 +405,68 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
                   "#06b6d4",
                   "#94a3b8",
                 ],
-                "circle-stroke-width": 2,
+                "circle-stroke-width": 2.5,
                 "circle-stroke-color": "#ffffff",
               },
             });
           }
 
-          if (!mapRef.current) return;
+          // 5. Add Rover Fleet (Points) — Initial sync fallback
+          const defaultRovers = {
+            type: "FeatureCollection",
+            features: [
+              {
+                type: "Feature",
+                id: "ROV-AQUA-01",
+                geometry: { type: "Point", coordinates: [77.5946, 12.9716] },
+                properties: { roverId: "ROV-AQUA-01", name: "Triton-1 Crawler", status: "ACTIVE" },
+              },
+              {
+                type: "Feature",
+                id: "ROV-AQUA-02",
+                geometry: { type: "Point", coordinates: [77.6200, 12.9770] },
+                properties: { roverId: "ROV-AQUA-02", name: "Nautilus Ground Scout", status: "ACTIVE" },
+              },
+              {
+                type: "Feature",
+                id: "ROV-AQUA-03",
+                geometry: { type: "Point", coordinates: [77.5750, 12.9940] },
+                properties: { roverId: "ROV-AQUA-03", name: "Hydra Pipe Probe", status: "ONLINE" },
+              },
+              {
+                type: "Feature",
+                id: "ROV-AQUA-04",
+                geometry: { type: "Point", coordinates: [77.6120, 12.9430] },
+                properties: { roverId: "ROV-AQUA-04", name: "Aquila Surface Drone", status: "ACTIVE" },
+              },
+            ],
+          };
 
-          // 5. Add Rover Fleet (Points)
-          const roversGeoJson = await getRoversGeoJson();
-          if (mapRef.current && !mapRef.current.getSource("rovers-source")) {
-            mapRef.current.addSource("rovers-source", {
+          if (!map.getSource("rovers-source")) {
+            map.addSource("rovers-source", {
               type: "geojson",
-              data: roversGeoJson as any,
+              data: defaultRovers as any,
             });
 
             // Rover Glow Aura
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "rovers-glow-layer",
               type: "circle",
               source: "rovers-source",
               paint: {
-                "circle-radius": 16,
-                "circle-color": "rgba(16, 185, 129, 0.3)",
+                "circle-radius": 22,
+                "circle-color": "rgba(16, 185, 129, 0.4)",
                 "circle-blur": 0.6,
               },
             });
 
             // Rover Core Marker
-            mapRef.current.addLayer({
+            map.addLayer({
               id: "rovers-point-layer",
               type: "circle",
               source: "rovers-source",
               paint: {
-                "circle-radius": 8.5,
+                "circle-radius": 9.5,
                 "circle-color": [
                   "match",
                   ["get", "status"],
@@ -419,10 +485,41 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
           }
 
           setIsMapLoaded(true);
+
+          // Asynchronously enrich incidents and rovers with dynamic backend data
+          try {
+            const dynamicIncidents = await getIncidentsGeoJson();
+            if (dynamicIncidents?.features?.length) {
+              const incSource = map.getSource("incidents-source") as any;
+              if (incSource && typeof incSource.setData === "function") {
+                incSource.setData(dynamicIncidents as any);
+              }
+            }
+          } catch (e) {
+            console.warn("Using fallback incidents data:", e);
+          }
+
+          try {
+            const dynamicRovers = await getRoversGeoJson();
+            if (dynamicRovers?.features?.length) {
+              const rovSource = map.getSource("rovers-source") as any;
+              if (rovSource && typeof rovSource.setData === "function") {
+                rovSource.setData(dynamicRovers as any);
+              }
+            }
+          } catch (e) {
+            console.warn("Using fallback rovers data:", e);
+          }
         } catch (err) {
           console.error("Error setting up map layers:", err);
         }
-      });
+      };
+
+      if (map.loaded()) {
+        addLayers();
+      } else {
+        map.on("load", addLayers);
+      }
 
       // Cursor & Coordinate Tracking
       map.on("mousemove", (e: MapLayerMouseEvent) => {
@@ -526,8 +623,6 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
         });
       });
 
-      mapRef.current = map;
-
       return () => {
         map.remove();
         mapRef.current = null;
@@ -561,6 +656,7 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
       };
 
       // Pipelines
+      setVisibility("pipelines-casing-layer", layers.pipelines.primary || layers.pipelines.secondary);
       setVisibility("pipelines-primary-layer", layers.pipelines.primary);
       setVisibility("pipelines-secondary-layer", layers.pipelines.secondary);
       setVisibility("pipelines-distribution-layer", layers.pipelines.distribution);
@@ -616,7 +712,7 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
         if (source && typeof source.setData === "function") {
           try {
             const updatedRovers = await getRoversGeoJson();
-            if (mapRef.current) {
+            if (mapRef.current && updatedRovers?.features?.length) {
               source.setData(updatedRovers as any);
             }
           } catch (e) {
@@ -637,5 +733,3 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
     );
   }
 );
-
-MapContainer.displayName = "MapContainer";

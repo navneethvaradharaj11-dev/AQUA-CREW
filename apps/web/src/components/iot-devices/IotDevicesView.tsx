@@ -768,7 +768,7 @@ export function IotDevicesView() {
                                 : "text-rose-400"
                             }`}
                           />
-                          <span>{device.battery_level_pct !== undefined ? `${device.battery_level_pct.toFixed(0)}%` : "AC"}</span>
+                          <span>{device.battery_level_pct != null ? `${Number(device.battery_level_pct).toFixed(0)}%` : "AC"}</span>
                         </div>
                       </td>
                       <td className="py-3 px-3 text-slate-400 text-[11px]">
@@ -1016,7 +1016,7 @@ export function IotDevicesView() {
                         <div className="text-[10px] text-slate-500 font-mono">{c.calibration_reference}</div>
                       </td>
                       <td className="py-3 px-3 text-slate-300 font-mono">
-                        ±{c.accuracy_tolerance.toFixed(2)}%
+                        ±{Number(c.accuracy_tolerance ?? 0.05).toFixed(2)}%
                       </td>
                       <td className="py-3 px-3 text-slate-400 font-sans text-[11px]">
                         {c.technician || "Authorized Lab"}

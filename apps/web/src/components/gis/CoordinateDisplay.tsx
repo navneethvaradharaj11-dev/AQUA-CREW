@@ -14,11 +14,11 @@ export function CoordinateDisplay({ coords, zoom }: CoordinateDisplayProps) {
       <div className="flex items-center gap-1.5 text-slate-300">
         <Crosshair className="h-3.5 w-3.5 text-cyan-400" />
         <span>
-          LAT: {coords ? coords.lat.toFixed(5) : "40.71280"}° N
+          LAT: {coords ? Math.abs(coords.lat).toFixed(5) : "12.97160"}° {coords ? (coords.lat >= 0 ? "N" : "S") : "N"}
         </span>
         <span className="text-slate-600">|</span>
         <span>
-          LNG: {coords ? coords.lng.toFixed(5) : "-74.00600"}° W
+          LNG: {coords ? Math.abs(coords.lng).toFixed(5) : "77.59460"}° {coords ? (coords.lng >= 0 ? "E" : "W") : "E"}
         </span>
       </div>
 

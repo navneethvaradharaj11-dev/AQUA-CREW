@@ -132,7 +132,7 @@ export function MapIntelligenceView() {
         {/* 2. Map Toolbar */}
         <MapToolbar
           onFitBounds={() => mapHandleRef.current?.fitBounds()}
-          onCenterMetro={() => mapHandleRef.current?.flyTo([-74.0060, 40.7128], 15)}
+          onCenterMetro={() => mapHandleRef.current?.flyTo([77.5946, 12.9716], 15)}
           onResetBearing={() => mapHandleRef.current?.resetBearing()}
           basemapStyle={basemapStyle}
           onChangeBasemap={(style) => setBasemapStyle(style)}

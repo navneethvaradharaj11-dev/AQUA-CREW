@@ -202,10 +202,10 @@ export function AppShell({ initialNav = "overview" }: AppShellProps) {
                   <div className="flex items-center gap-2">
                     <Map className="h-5 w-5 text-cyan-400" />
                     <h2 className="text-lg font-bold tracking-tight text-white">
-                      Metropolitan Pipeline GIS Intelligence
+                      Bengaluru Metropolitan Pipeline GIS Intelligence
                     </h2>
-                    <span className="rounded bg-amber-950/80 px-2 py-0.5 text-[10px] font-mono text-amber-300 border border-amber-800/60 font-semibold">
-                      [SIMULATED DEMO GRID]
+                    <span className="rounded bg-cyan-950/80 px-2 py-0.5 text-[10px] font-mono text-cyan-300 border border-cyan-800/60 font-semibold">
+                      [BWSSB SMART WATER GRID]
                     </span>
                   </div>
                   <p className="text-xs text-slate-400">
