@@ -350,3 +350,4 @@ export default function DocsPage({ params }: DocsPageProps) {
     </div>
   );
 }
+
