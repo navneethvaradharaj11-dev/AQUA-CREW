@@ -1,0 +1,79 @@
+"""
+Pytest Test Fixtures and TestClient Setup
+Uses an isolated in-memory SQLite database for complete test hermeticity.
+"""
+import pytest
+from fastapi.testclient import TestClient
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.pool import StaticPool
+
+from app.database.session import Base, get_db
+from app.main import app
+from app.repositories import RoverRepository, MissionRepository, PipelineRepository, UserRepository, IncidentRepository
+from app.repositories.repair_repository import RepairRepository
+from app.repositories.iot_repository import IotRepository
+from app.middleware.rate_limiter import rate_limiter_instance
+
+# In-memory SQLite for hermetic tests
+TEST_DATABASE_URL = "sqlite:///:memory:"
+
+test_engine = create_engine(
+    TEST_DATABASE_URL,
+    connect_args={"check_same_thread": False},
+    poolclass=StaticPool,
+)
+TestingSessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=test_engine)
+
+
+@pytest.fixture(scope="session", autouse=True)
+def setup_test_db():
+    Base.metadata.create_all(bind=test_engine)
+    with TestingSessionLocal() as session:
+        UserRepository.seed_defaults(session)
+    yield
+    Base.metadata.drop_all(bind=test_engine)
+
+
+@pytest.fixture(autouse=True)
+def reset_rate_limiter_fixture():
+    rate_limiter_instance.reset()
+    yield
+    rate_limiter_instance.reset()
+
+
+@pytest.fixture
+def db_session():
+    connection = test_engine.connect()
+    transaction = connection.begin()
+    session = TestingSessionLocal(bind=connection)
+
+    # Seed defaults
+    PipelineRepository.seed_defaults(session)
+    RoverRepository.seed_defaults(session)
+    MissionRepository.seed_defaults(session)
+    UserRepository.seed_defaults(session)
+    RepairRepository.seed_default_crews(session)
+    IotRepository.seed_defaults(session)
+    IncidentRepository.seed_defaults(session)
+
+    yield session
+
+    session.close()
+    transaction.rollback()
+    connection.close()
+
+
+@pytest.fixture
+def client(db_session):
+    def override_get_db():
+        try:
+            yield db_session
+        finally:
+            pass
+
+    app.dependency_overrides[get_db] = override_get_db
+    with TestClient(app) as test_client:
+        yield test_client
+    app.dependency_overrides.clear()
+

@@ -1,0 +1,52 @@
+{
+  "telemetry_ingestion_ms": {
+    "iterations": 500,
+    "mean_ms": 0.007,
+    "median_ms": 0.006,
+    "p95_ms": 0.009,
+    "min_ms": 0.006,
+    "max_ms": 0.101
+  },
+  "ai_inference_ms": {
+    "iterations": 500,
+    "mean_ms": 0.003,
+    "median_ms": 0.003,
+    "p95_ms": 0.003,
+    "min_ms": 0.002,
+    "max_ms": 0.01
+  },
+  "master_e2e_lifecycle_ms": {
+    "iterations": 50,
+    "mean_ms": 57.074,
+    "median_ms": 55.738,
+    "p95_ms": 67.458,
+    "min_ms": 49.976,
+    "max_ms": 93.52
+  },
+  "dossier_compilation_ms": {
+    "iterations": 100,
+    "mean_ms": 1.885,
+    "median_ms": 1.829,
+    "p95_ms": 2.36,
+    "min_ms": 1.535,
+    "max_ms": 4.579
+  },
+  "demo_reset_ms": {
+    "iterations": 10,
+    "mean_ms": 4.471,
+    "median_ms": 4.07,
+    "min_ms": 3.432,
+    "max_ms": 8.762
+  },
+  "memory_usage_mb": {
+    "current_mb": 6.72,
+    "peak_mb": 6.75
+  },
+  "benchmark_metadata": {
+    "timestamp": "2026-11-16T15:34:02.621990+00:00",
+    "task": "TASK_20_FINAL_PRODUCT_RELEASE",
+    "python_version": "3.14.6",
+    "hardware_actuation_enabled": false,
+    "environment": "SIMULATION_FIRST_SANDBOX"
+  }
+}
