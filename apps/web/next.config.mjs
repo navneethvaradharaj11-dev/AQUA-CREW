@@ -25,7 +25,7 @@ const nextConfig = {
           },
           {
             key: "Content-Security-Policy",
-            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' blob:; child-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https: https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org; font-src 'self'; connect-src 'self' http://localhost:8000 ws://localhost:8000 http://127.0.0.1:8000 ws://127.0.0.1:8000 http://localhost:8005 ws://localhost:8005 http://127.0.0.1:8005 ws://127.0.0.1:8005 https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.openstreetmap.org data: blob:; frame-ancestors 'none';",
+            value: "default-src 'self'; script-src 'self' 'unsafe-eval' 'unsafe-inline' blob:; worker-src 'self' blob:; child-src 'self' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' blob: data: https: https://services.arcgisonline.com https://*.arcgisonline.com https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org; font-src 'self' data:; connect-src 'self' http://localhost:8000 ws://localhost:8000 http://127.0.0.1:8000 ws://127.0.0.1:8000 http://localhost:8005 ws://localhost:8005 http://127.0.0.1:8005 ws://127.0.0.1:8005 https://services.arcgisonline.com https://*.arcgisonline.com https://*.basemaps.cartocdn.com https://*.tile.openstreetmap.org https://tile.openstreetmap.org https://*.openstreetmap.org data: blob:; frame-ancestors 'none';",
           },
         ],
       },

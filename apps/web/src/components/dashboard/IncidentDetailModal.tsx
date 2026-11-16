@@ -67,9 +67,11 @@ export function IncidentDetailModal({ incident, onClose }: IncidentDetailModalPr
             <MapPin className="h-4 w-4 text-cyan-400 shrink-0 mt-0.5" />
             <div>
               <span className="text-slate-400 text-[11px] block">Estimated GIS Coordinates</span>
-              <span className="text-slate-100 font-semibold">{incident.estimatedLocation.zone}</span>
+              <span className="text-slate-100 font-semibold">{incident.estimatedLocation?.zone || "Metro Inspection Zone"}</span>
               <span className="font-mono text-[11px] text-slate-400 block">
-                Latitude: {incident.estimatedLocation.latitude.toFixed(5)} • Longitude: {incident.estimatedLocation.longitude.toFixed(5)} • Pipe Depth: {incident.estimatedLocation.depthM}m
+                Latitude: {incident.estimatedLocation?.latitude != null ? incident.estimatedLocation.latitude.toFixed(5) : "—"} • Longitude:{" "}
+                {incident.estimatedLocation?.longitude != null ? incident.estimatedLocation.longitude.toFixed(5) : "—"} • Pipe Depth:{" "}
+                {incident.estimatedLocation?.depthM ?? "—"}m
               </span>
             </div>
           </div>

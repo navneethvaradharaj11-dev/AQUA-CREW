@@ -25,28 +25,32 @@ export interface GeoJsonFeatureCollection<P> {
  */
 export async function getRoversGeoJson(): Promise<GeoJsonFeatureCollection<RoverMarkerProperties>> {
   const rovers = await fetchRovers();
-  const features: GeoJsonFeature<RoverMarkerProperties>[] = rovers.map((r) => ({
-    type: "Feature",
-    id: r.id,
-    geometry: {
-      type: "Point",
-      coordinates: [r.currentLocation.longitude, r.currentLocation.latitude],
-    },
-    properties: {
-      isSimulated: true,
-      provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
-      roverId: r.id,
-      name: r.name,
-      model: r.model,
-      status: r.status,
-      batteryPercentage: r.batteryPercentage,
-      currentMission: r.currentMission,
-      stationName: r.currentLocation.stationName,
-      velocityMps: r.kinematics.velocityMps,
-      headingDeg: r.kinematics.headingDeg,
-      lastPing: r.lastCommunication,
-    },
-  }));
+  const features: GeoJsonFeature<RoverMarkerProperties>[] = (rovers || []).map((r) => {
+    const lng = Number(r.currentLocation?.longitude ?? -74.006);
+    const lat = Number(r.currentLocation?.latitude ?? 40.7128);
+    return {
+      type: "Feature",
+      id: r.id,
+      geometry: {
+        type: "Point",
+        coordinates: [lng, lat],
+      },
+      properties: {
+        isSimulated: true,
+        provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
+        roverId: r.id,
+        name: r.name || "Aqua Rover",
+        model: r.model || "AQUA-CRAWLER",
+        status: r.status || "IDLE",
+        batteryPercentage: Number(r.batteryPercentage ?? 100),
+        currentMission: r.currentMission || "Standby Patrol",
+        stationName: r.currentLocation?.stationName || "Station",
+        velocityMps: Number(r.kinematics?.velocityMps ?? 0),
+        headingDeg: Number(r.kinematics?.headingDeg ?? 0),
+        lastPing: r.lastCommunication || "Just now",
+      },
+    };
+  });
 
   return {
     type: "FeatureCollection",
@@ -59,30 +63,34 @@ export async function getRoversGeoJson(): Promise<GeoJsonFeatureCollection<Rover
  */
 export async function getIncidentsGeoJson(): Promise<GeoJsonFeatureCollection<LeakIncidentProperties>> {
   const incidents = await fetchIncidents();
-  const features: GeoJsonFeature<LeakIncidentProperties>[] = incidents.map((inc) => ({
-    type: "Feature",
-    id: inc.id,
-    geometry: {
-      type: "Point",
-      coordinates: [inc.estimatedLocation.longitude, inc.estimatedLocation.latitude],
-    },
-    properties: {
-      isSimulated: true,
-      provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
-      incidentId: inc.id,
-      segmentId: inc.pipelineSegmentId,
-      segmentName: inc.segmentName,
-      severity: inc.severity,
-      status: inc.status,
-      detectionTimestamp: inc.detectionTimestamp,
-      estimatedLossRateLph: inc.estimatedLossRateLph,
-      confidenceScorePct: inc.confidenceScorePct,
-      dominantFreqHz: inc.dominantAcousticFreqHz,
-      depthM: inc.estimatedLocation.depthM,
-      assignedRoverId: inc.assignedRoverId,
-      zone: inc.estimatedLocation.zone,
-    },
-  }));
+  const features: GeoJsonFeature<LeakIncidentProperties>[] = (incidents || []).map((inc) => {
+    const lng = Number(inc.estimatedLocation?.longitude ?? -74.006);
+    const lat = Number(inc.estimatedLocation?.latitude ?? 40.7128);
+    return {
+      type: "Feature",
+      id: inc.id,
+      geometry: {
+        type: "Point",
+        coordinates: [lng, lat],
+      },
+      properties: {
+        isSimulated: true,
+        provenance: "VIRTUAL_METROPOLITAN_DEMO_GRID",
+        incidentId: inc.id,
+        segmentId: inc.pipelineSegmentId || "PIPE-SEC",
+        segmentName: inc.segmentName || "Pipeline Segment",
+        severity: inc.severity || "Medium",
+        status: inc.status || "Investigating",
+        detectionTimestamp: inc.detectionTimestamp || "Recent",
+        estimatedLossRateLph: Number(inc.estimatedLossRateLph ?? 0),
+        confidenceScorePct: Number(inc.confidenceScorePct ?? 85),
+        dominantFreqHz: Number(inc.dominantAcousticFreqHz ?? 1000),
+        depthM: Number(inc.estimatedLocation?.depthM ?? 2.0),
+        assignedRoverId: inc.assignedRoverId || undefined,
+        zone: inc.estimatedLocation?.zone || "Central Sector",
+      },
+    };
+  });
 
   return {
     type: "FeatureCollection",

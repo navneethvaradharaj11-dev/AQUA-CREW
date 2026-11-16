@@ -54,19 +54,19 @@ export function RoverDetailModal({ rover, onClose }: RoverDetailModalProps) {
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs font-mono">
           <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-2.5">
             <span className="text-[10px] text-slate-500 uppercase block">Model</span>
-            <span className="text-slate-200 font-semibold truncate block">{rover.model}</span>
+            <span className="text-slate-200 font-semibold truncate block">{rover.model || "AQUA-CRAWLER"}</span>
           </div>
           <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-2.5">
             <span className="text-[10px] text-slate-500 uppercase block">Battery SoC</span>
-            <span className="text-cyan-400 font-semibold">{rover.batteryPercentage}%</span>
+            <span className="text-cyan-400 font-semibold">{rover.batteryPercentage ?? 0}%</span>
           </div>
           <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-2.5">
             <span className="text-[10px] text-slate-500 uppercase block">Velocity</span>
-            <span className="text-white font-semibold">{rover.kinematics.velocityMps} m/s</span>
+            <span className="text-white font-semibold">{rover.kinematics?.velocityMps ?? 0} m/s</span>
           </div>
           <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-2.5">
             <span className="text-[10px] text-slate-500 uppercase block">Signal RSSI</span>
-            <span className="text-emerald-400 font-semibold">{rover.diagnostics.signalRssiDbm} dBm</span>
+            <span className="text-emerald-400 font-semibold">{rover.diagnostics?.signalRssiDbm ?? -70} dBm</span>
           </div>
         </div>
 
@@ -76,9 +76,11 @@ export function RoverDetailModal({ rover, onClose }: RoverDetailModalProps) {
             <MapPin className="h-4 w-4 text-cyan-400 shrink-0 mt-0.5" />
             <div>
               <span className="text-slate-400 text-[11px] block">Current Pipe Station</span>
-              <span className="text-slate-100 font-semibold">{rover.currentLocation.stationName}</span>
+              <span className="text-slate-100 font-semibold">{rover.currentLocation?.stationName ?? "Station Grid"}</span>
               <span className="font-mono text-[10px] text-slate-500 block">
-                GPS: {rover.currentLocation.latitude.toFixed(5)}, {rover.currentLocation.longitude.toFixed(5)} • Segment: {rover.currentLocation.pipeSegmentId}
+                GPS: {rover.currentLocation?.latitude != null ? rover.currentLocation.latitude.toFixed(5) : "—"},{" "}
+                {rover.currentLocation?.longitude != null ? rover.currentLocation.longitude.toFixed(5) : "—"} • Segment:{" "}
+                {rover.currentLocation?.pipeSegmentId ?? "N/A"}
               </span>
             </div>
           </div>
@@ -86,7 +88,7 @@ export function RoverDetailModal({ rover, onClose }: RoverDetailModalProps) {
             <Compass className="h-4 w-4 text-slate-500 shrink-0 mt-0.5" />
             <div>
               <span className="text-slate-400 text-[11px] block">Active Mission Assignment</span>
-              <span className="text-slate-200">{rover.currentMission}</span>
+              <span className="text-slate-200">{rover.currentMission || "Patrol Standby"}</span>
             </div>
           </div>
         </div>
@@ -99,15 +101,15 @@ export function RoverDetailModal({ rover, onClose }: RoverDetailModalProps) {
           <div className="grid grid-cols-3 gap-3 text-xs font-mono">
             <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
               <span className="text-[10px] text-slate-500 uppercase block">Acoustic SPL</span>
-              <span className="text-lg font-bold text-cyan-300">{rover.payloadSensors.acousticSplDb} dB</span>
+              <span className="text-lg font-bold text-cyan-300">{rover.payloadSensors?.acousticSplDb ?? 0} dB</span>
             </div>
             <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
               <span className="text-[10px] text-slate-500 uppercase block">Dominant Freq</span>
-              <span className="text-lg font-bold text-white">{rover.payloadSensors.dominantFreqHz} Hz</span>
+              <span className="text-lg font-bold text-white">{rover.payloadSensors?.dominantFreqHz ?? 0} Hz</span>
             </div>
             <div className="rounded-lg border border-slate-800 bg-slate-900/60 p-3">
               <span className="text-[10px] text-slate-500 uppercase block">Ground Moisture</span>
-              <span className="text-lg font-bold text-teal-300">{rover.payloadSensors.groundMoisturePct}%</span>
+              <span className="text-lg font-bold text-teal-300">{rover.payloadSensors?.groundMoisturePct ?? 0}%</span>
             </div>
           </div>
         </div>

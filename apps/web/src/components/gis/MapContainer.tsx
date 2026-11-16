@@ -7,7 +7,6 @@ import {
   AttributionControl,
   type StyleSpecification,
   type MapLayerMouseEvent,
-  type RasterTileSource,
 } from "maplibre-gl";
 import "maplibre-gl/dist/maplibre-gl.css";
 import {
@@ -59,40 +58,70 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
     ];
 
     const getBasemapStyle = (style: "dark" | "light" | "osm"): StyleSpecification => {
-      const tileUrls = {
-        dark: [
-          "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-          "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-          "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-        ],
-        light: [
-          "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-          "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-          "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-        ],
-        osm: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-      }[style];
-
       return {
         version: 8,
         sources: {
-          "basemap-tiles": {
+          "basemap-dark-tiles": {
             type: "raster",
-            tiles: tileUrls,
+            tiles: [
+              "https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+            ],
             tileSize: 256,
+            maxzoom: 16,
             attribution:
-              style === "osm"
-                ? '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-                : '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> &copy; <a href="https://carto.com/attributions">CARTO</a>',
+              '&copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> &mdash; SCADA Dark Gray Base',
+          },
+          "basemap-light-tiles": {
+            type: "raster",
+            tiles: [
+              "https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Light_Gray_Base/MapServer/tile/{z}/{y}/{x}",
+            ],
+            tileSize: 256,
+            maxzoom: 16,
+            attribution:
+              '&copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> &mdash; Light Gray Canvas',
+          },
+          "basemap-osm-tiles": {
+            type: "raster",
+            tiles: [
+              "https://services.arcgisonline.com/arcgis/rest/services/World_Street_Map/MapServer/tile/{z}/{y}/{x}",
+            ],
+            tileSize: 256,
+            maxzoom: 19,
+            attribution:
+              '&copy; <a href="https://www.esri.com" target="_blank" rel="noopener">Esri</a> &mdash; World Street Map',
           },
         },
         layers: [
           {
-            id: "basemap-layer",
+            id: "basemap-dark-layer",
             type: "raster",
-            source: "basemap-tiles",
+            source: "basemap-dark-tiles",
             minzoom: 0,
-            maxzoom: 20,
+            maxzoom: 22,
+            layout: {
+              visibility: style === "dark" ? "visible" : "none",
+            },
+          },
+          {
+            id: "basemap-light-layer",
+            type: "raster",
+            source: "basemap-light-tiles",
+            minzoom: 0,
+            maxzoom: 22,
+            layout: {
+              visibility: style === "light" ? "visible" : "none",
+            },
+          },
+          {
+            id: "basemap-osm-layer",
+            type: "raster",
+            source: "basemap-osm-tiles",
+            minzoom: 0,
+            maxzoom: 22,
+            layout: {
+              visibility: style === "osm" ? "visible" : "none",
+            },
           },
         ],
       };
@@ -123,14 +152,38 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
     useEffect(() => {
       if (!mapContainerRef.current) return;
 
-      const map = new MapLibreMap({
-        container: mapContainerRef.current,
-        style: getBasemapStyle(basemapStyle),
-        center: [-74.0060, 40.7128],
-        zoom: 14.2,
-        pitch: 30, // Subtle SCADA 3D tilt
-        attributionControl: false,
-      });
+      // Check WebGL availability safely
+      const isWebGLSupported = () => {
+        try {
+          const canvas = document.createElement("canvas");
+          return !!(
+            window.WebGLRenderingContext &&
+            (canvas.getContext("webgl") || canvas.getContext("experimental-webgl"))
+          );
+        } catch {
+          return false;
+        }
+      };
+
+      if (!isWebGLSupported()) {
+        console.warn("WebGL is not supported or hardware acceleration is disabled.");
+        return;
+      }
+
+      let map: MapLibreMap;
+      try {
+        map = new MapLibreMap({
+          container: mapContainerRef.current,
+          style: getBasemapStyle(basemapStyle),
+          center: [-74.0060, 40.7128],
+          zoom: 14.2,
+          pitch: 30, // Subtle SCADA 3D tilt
+          attributionControl: false,
+        });
+      } catch (e) {
+        console.error("Failed to construct MapLibreMap:", e);
+        return;
+      }
 
       map.addControl(
         new AttributionControl({ compact: true }),
@@ -142,209 +195,233 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
       );
 
       map.on("load", async () => {
-        // 1. Add Inspection Zones (Polygons)
-        const zonesGeoJson = getZonesGeoJson();
-        map.addSource("zones-source", {
-          type: "geojson",
-          data: zonesGeoJson as any,
-        });
+        try {
+          if (!mapRef.current) return;
 
-        map.addLayer({
-          id: "zones-fill-layer",
-          type: "fill",
-          source: "zones-source",
-          paint: {
-            "fill-color": ["get", "fillColor"],
-            "fill-opacity": 0.08,
-          },
-        });
+          // 1. Add Inspection Zones (Polygons)
+          const zonesGeoJson = getZonesGeoJson();
+          if (mapRef.current && !mapRef.current.getSource("zones-source")) {
+            mapRef.current.addSource("zones-source", {
+              type: "geojson",
+              data: zonesGeoJson as any,
+            });
 
-        map.addLayer({
-          id: "zones-outline-layer",
-          type: "line",
-          source: "zones-source",
-          paint: {
-            "line-color": ["get", "fillColor"],
-            "line-width": 1.5,
-            "line-dasharray": [3, 2],
-            "line-opacity": 0.5,
-          },
-        });
+            mapRef.current.addLayer({
+              id: "zones-fill-layer",
+              type: "fill",
+              source: "zones-source",
+              paint: {
+                "fill-color": ["get", "fillColor"],
+                "fill-opacity": 0.08,
+              },
+            });
 
-        // 2. Add Pipeline Network (LineStrings)
-        const pipelinesGeoJson = getPipelineGeoJson();
-        map.addSource("pipelines-source", {
-          type: "geojson",
-          data: pipelinesGeoJson as any,
-        });
+            mapRef.current.addLayer({
+              id: "zones-outline-layer",
+              type: "line",
+              source: "zones-source",
+              paint: {
+                "line-color": ["get", "fillColor"],
+                "line-width": 1.5,
+                "line-dasharray": [3, 2],
+                "line-opacity": 0.5,
+              },
+            });
+          }
 
-        // Primary Trunk Lines
-        map.addLayer({
-          id: "pipelines-primary-layer",
-          type: "line",
-          source: "pipelines-source",
-          filter: ["==", ["get", "category"], "primary"],
-          paint: {
-            "line-color": "#06b6d4",
-            "line-width": 4.5,
-            "line-opacity": 0.9,
-          },
-        });
+          if (!mapRef.current) return;
 
-        // Secondary Feeder Lines
-        map.addLayer({
-          id: "pipelines-secondary-layer",
-          type: "line",
-          source: "pipelines-source",
-          filter: ["==", ["get", "category"], "secondary"],
-          paint: {
-            "line-color": "#38bdf8",
-            "line-width": 3.2,
-            "line-opacity": 0.85,
-          },
-        });
+          // 2. Add Pipeline Network (LineStrings)
+          const pipelinesGeoJson = getPipelineGeoJson();
+          if (mapRef.current && !mapRef.current.getSource("pipelines-source")) {
+            mapRef.current.addSource("pipelines-source", {
+              type: "geojson",
+              data: pipelinesGeoJson as any,
+            });
 
-        // Distribution Lines
-        map.addLayer({
-          id: "pipelines-distribution-layer",
-          type: "line",
-          source: "pipelines-source",
-          filter: ["==", ["get", "category"], "distribution"],
-          paint: {
-            "line-color": "#14b8a6",
-            "line-width": 2.5,
-            "line-opacity": 0.8,
-          },
-        });
+            // Primary Trunk Lines
+            mapRef.current.addLayer({
+              id: "pipelines-primary-layer",
+              type: "line",
+              source: "pipelines-source",
+              filter: ["==", ["get", "category"], "primary"],
+              paint: {
+                "line-color": "#06b6d4",
+                "line-width": 4.5,
+                "line-opacity": 0.9,
+              },
+            });
 
-        // Service Laterals (Dashed)
-        map.addLayer({
-          id: "pipelines-service-layer",
-          type: "line",
-          source: "pipelines-source",
-          filter: ["==", ["get", "category"], "service"],
-          paint: {
-            "line-color": "#94a3b8",
-            "line-width": 1.8,
-            "line-dasharray": [2, 2],
-            "line-opacity": 0.75,
-          },
-        });
+            // Secondary Feeder Lines
+            mapRef.current.addLayer({
+              id: "pipelines-secondary-layer",
+              type: "line",
+              source: "pipelines-source",
+              filter: ["==", ["get", "category"], "secondary"],
+              paint: {
+                "line-color": "#38bdf8",
+                "line-width": 3.2,
+                "line-opacity": 0.85,
+              },
+            });
 
-        // 3. Add Stationary Sensor Stations (Points)
-        const sensorsGeoJson = getSensorsGeoJson();
-        map.addSource("sensors-source", {
-          type: "geojson",
-          data: sensorsGeoJson as any,
-        });
+            // Distribution Lines
+            mapRef.current.addLayer({
+              id: "pipelines-distribution-layer",
+              type: "line",
+              source: "pipelines-source",
+              filter: ["==", ["get", "category"], "distribution"],
+              paint: {
+                "line-color": "#14b8a6",
+                "line-width": 2.5,
+                "line-opacity": 0.8,
+              },
+            });
 
-        map.addLayer({
-          id: "sensors-point-layer",
-          type: "circle",
-          source: "sensors-source",
-          paint: {
-            "circle-radius": 5.5,
-            "circle-color": "#38bdf8",
-            "circle-stroke-width": 1.5,
-            "circle-stroke-color": "#02060e",
-          },
-        });
+            // Service Laterals (Dashed)
+            mapRef.current.addLayer({
+              id: "pipelines-service-layer",
+              type: "line",
+              source: "pipelines-source",
+              filter: ["==", ["get", "category"], "service"],
+              paint: {
+                "line-color": "#94a3b8",
+                "line-width": 1.8,
+                "line-dasharray": [2, 2],
+                "line-opacity": 0.75,
+              },
+            });
+          }
 
-        // 4. Add Leak Incidents (Points)
-        const incidentsGeoJson = await getIncidentsGeoJson();
-        map.addSource("incidents-source", {
-          type: "geojson",
-          data: incidentsGeoJson as any,
-        });
+          if (!mapRef.current) return;
 
-        // Incident Pulsing Aura
-        map.addLayer({
-          id: "incidents-glow-layer",
-          type: "circle",
-          source: "incidents-source",
-          paint: {
-            "circle-radius": 14,
-            "circle-color": [
-              "match",
-              ["get", "severity"],
-              "Critical",
-              "rgba(239, 68, 68, 0.35)",
-              "High",
-              "rgba(245, 158, 11, 0.35)",
-              "Medium",
-              "rgba(6, 182, 212, 0.3)",
-              "rgba(100, 116, 139, 0.25)",
-            ],
-            "circle-blur": 0.8,
-          },
-        });
+          // 3. Add Stationary Sensor Stations (Points)
+          const sensorsGeoJson = getSensorsGeoJson();
+          if (mapRef.current && !mapRef.current.getSource("sensors-source")) {
+            mapRef.current.addSource("sensors-source", {
+              type: "geojson",
+              data: sensorsGeoJson as any,
+            });
 
-        // Incident Core Marker
-        map.addLayer({
-          id: "incidents-point-layer",
-          type: "circle",
-          source: "incidents-source",
-          paint: {
-            "circle-radius": 7,
-            "circle-color": [
-              "match",
-              ["get", "severity"],
-              "Critical",
-              "#ef4444",
-              "High",
-              "#f59e0b",
-              "Medium",
-              "#06b6d4",
-              "#94a3b8",
-            ],
-            "circle-stroke-width": 2,
-            "circle-stroke-color": "#ffffff",
-          },
-        });
+            mapRef.current.addLayer({
+              id: "sensors-point-layer",
+              type: "circle",
+              source: "sensors-source",
+              paint: {
+                "circle-radius": 5.5,
+                "circle-color": "#38bdf8",
+                "circle-stroke-width": 1.5,
+                "circle-stroke-color": "#02060e",
+              },
+            });
+          }
 
-        // 5. Add Rover Fleet (Points)
-        const roversGeoJson = await getRoversGeoJson();
-        map.addSource("rovers-source", {
-          type: "geojson",
-          data: roversGeoJson as any,
-        });
+          if (!mapRef.current) return;
 
-        // Rover Glow Aura
-        map.addLayer({
-          id: "rovers-glow-layer",
-          type: "circle",
-          source: "rovers-source",
-          paint: {
-            "circle-radius": 16,
-            "circle-color": "rgba(16, 185, 129, 0.3)",
-            "circle-blur": 0.6,
-          },
-        });
+          // 4. Add Leak Incidents (Points)
+          const incidentsGeoJson = await getIncidentsGeoJson();
+          if (mapRef.current && !mapRef.current.getSource("incidents-source")) {
+            mapRef.current.addSource("incidents-source", {
+              type: "geojson",
+              data: incidentsGeoJson as any,
+            });
 
-        // Rover Core Marker
-        map.addLayer({
-          id: "rovers-point-layer",
-          type: "circle",
-          source: "rovers-source",
-          paint: {
-            "circle-radius": 8.5,
-            "circle-color": [
-              "match",
-              ["get", "status"],
-              "ACTIVE",
-              "#10b981",
-              "ONLINE",
-              "#06b6d4",
-              "WARNING",
-              "#f59e0b",
-              "#64748b",
-            ],
-            "circle-stroke-width": 2.5,
-            "circle-stroke-color": "#ffffff",
-          },
-        });
+            // Incident Pulsing Aura
+            mapRef.current.addLayer({
+              id: "incidents-glow-layer",
+              type: "circle",
+              source: "incidents-source",
+              paint: {
+                "circle-radius": 14,
+                "circle-color": [
+                  "match",
+                  ["get", "severity"],
+                  "Critical",
+                  "rgba(239, 68, 68, 0.35)",
+                  "High",
+                  "rgba(245, 158, 11, 0.35)",
+                  "Medium",
+                  "rgba(6, 182, 212, 0.3)",
+                  "rgba(100, 116, 139, 0.25)",
+                ],
+                "circle-blur": 0.8,
+              },
+            });
 
-        setIsMapLoaded(true);
+            // Incident Core Marker
+            mapRef.current.addLayer({
+              id: "incidents-point-layer",
+              type: "circle",
+              source: "incidents-source",
+              paint: {
+                "circle-radius": 7,
+                "circle-color": [
+                  "match",
+                  ["get", "severity"],
+                  "Critical",
+                  "#ef4444",
+                  "High",
+                  "#f59e0b",
+                  "Medium",
+                  "#06b6d4",
+                  "#94a3b8",
+                ],
+                "circle-stroke-width": 2,
+                "circle-stroke-color": "#ffffff",
+              },
+            });
+          }
+
+          if (!mapRef.current) return;
+
+          // 5. Add Rover Fleet (Points)
+          const roversGeoJson = await getRoversGeoJson();
+          if (mapRef.current && !mapRef.current.getSource("rovers-source")) {
+            mapRef.current.addSource("rovers-source", {
+              type: "geojson",
+              data: roversGeoJson as any,
+            });
+
+            // Rover Glow Aura
+            mapRef.current.addLayer({
+              id: "rovers-glow-layer",
+              type: "circle",
+              source: "rovers-source",
+              paint: {
+                "circle-radius": 16,
+                "circle-color": "rgba(16, 185, 129, 0.3)",
+                "circle-blur": 0.6,
+              },
+            });
+
+            // Rover Core Marker
+            mapRef.current.addLayer({
+              id: "rovers-point-layer",
+              type: "circle",
+              source: "rovers-source",
+              paint: {
+                "circle-radius": 8.5,
+                "circle-color": [
+                  "match",
+                  ["get", "status"],
+                  "ACTIVE",
+                  "#10b981",
+                  "ONLINE",
+                  "#06b6d4",
+                  "WARNING",
+                  "#f59e0b",
+                  "#64748b",
+                ],
+                "circle-stroke-width": 2.5,
+                "circle-stroke-color": "#ffffff",
+              },
+            });
+          }
+
+          setIsMapLoaded(true);
+        } catch (err) {
+          console.error("Error setting up map layers:", err);
+        }
       });
 
       // Cursor & Coordinate Tracking
@@ -460,26 +537,16 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
     // Update Basemap when basemapStyle changes
     useEffect(() => {
       if (!mapRef.current || !isMapLoaded) return;
-      const source = mapRef.current.getSource("basemap-tiles") as RasterTileSource;
-      if (source && source.tiles) {
-        const tileUrls = {
-          dark: [
-            "https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-            "https://b.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-            "https://c.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}@2x.png",
-          ],
-          light: [
-            "https://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-            "https://b.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-            "https://c.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png",
-          ],
-          osm: ["https://tile.openstreetmap.org/{z}/{x}/{y}.png"],
-        }[basemapStyle];
+      const map = mapRef.current;
+      const setVisibility = (layerId: string, visible: boolean) => {
+        if (map.getLayer(layerId)) {
+          map.setLayoutProperty(layerId, "visibility", visible ? "visible" : "none");
+        }
+      };
 
-        // MapLibre doesn't have setTiles directly on all raster sources, so we update the source
-        // Safely check and trigger repaint
-        mapRef.current.triggerRepaint();
-      }
+      setVisibility("basemap-dark-layer", basemapStyle === "dark");
+      setVisibility("basemap-light-layer", basemapStyle === "light");
+      setVisibility("basemap-osm-layer", basemapStyle === "osm");
     }, [basemapStyle, isMapLoaded]);
 
     // Update Layer Visibility dynamically without recreating the map
@@ -545,10 +612,16 @@ export const MapContainer = forwardRef<MapContainerHandle, MapContainerProps>(
 
       const unsubscribe = roverEventBus.subscribe("ROVER_TELEMETRY_UPDATED", async () => {
         if (!mapRef.current) return;
-        const source = mapRef.current.getSource("rovers-source") as any;
+        const source = mapRef.current?.getSource("rovers-source") as any;
         if (source && typeof source.setData === "function") {
-          const updatedRovers = await getRoversGeoJson();
-          source.setData(updatedRovers as any);
+          try {
+            const updatedRovers = await getRoversGeoJson();
+            if (mapRef.current) {
+              source.setData(updatedRovers as any);
+            }
+          } catch (e) {
+            console.warn("Failed to update dynamic rover positions:", e);
+          }
         }
       });
 

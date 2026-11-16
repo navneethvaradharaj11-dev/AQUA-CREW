@@ -165,9 +165,10 @@ export function LeakIncidentSection({ incidents, onSelectIncident }: LeakInciden
                       </span>
                     </td>
                     <td className="py-3 px-3">
-                      <div className="text-slate-300 text-[11px]">{item.estimatedLocation.zone}</div>
+                      <div className="text-slate-300 text-[11px]">{item.estimatedLocation?.zone || "Central Sector"}</div>
                       <div className="text-[10px] font-mono text-slate-500">
-                        {item.estimatedLocation.latitude.toFixed(4)}, {item.estimatedLocation.longitude.toFixed(4)}
+                        {item.estimatedLocation?.latitude != null ? item.estimatedLocation.latitude.toFixed(4) : "—"},{" "}
+                        {item.estimatedLocation?.longitude != null ? item.estimatedLocation.longitude.toFixed(4) : "—"}
                       </div>
                     </td>
                     <td className="py-3 px-3 font-mono font-semibold text-white">

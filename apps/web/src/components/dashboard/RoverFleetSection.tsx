@@ -100,13 +100,13 @@ export function RoverFleetSection({ rovers, onSelectRover }: RoverFleetSectionPr
                   <div className="flex items-start gap-1.5 text-slate-300">
                     <MapPin className="h-3.5 w-3.5 text-cyan-400 shrink-0 mt-0.5" />
                     <span className="text-[11px] truncate leading-tight">
-                      {rover.currentLocation.stationName}
+                      {rover.currentLocation?.stationName || "Station Grid"}
                     </span>
                   </div>
                   <div className="flex items-start gap-1.5 text-slate-400">
                     <Compass className="h-3.5 w-3.5 text-slate-500 shrink-0 mt-0.5" />
                     <span className="text-[11px] truncate leading-tight">
-                      {rover.currentMission}
+                      {rover.currentMission || "Patrol Standby"}
                     </span>
                   </div>
                 </div>
